@@ -10,8 +10,9 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.recyclerview_update_3.R
+import com.example.recyclerview_update_3.databinding.ListItemBinding
 
-class ItemAdapter(val callbackClickItem: (Int) -> Unit) :
+class ItemAdapter(val clickListener : ItemListener):
     ListAdapter<String, ItemAdapter.ItemViewHolder>(DiffCallback) {
 
     companion object DiffCallback : DiffUtil.ItemCallback<String>() {
@@ -24,24 +25,28 @@ class ItemAdapter(val callbackClickItem: (Int) -> Unit) :
         }
     }
 
-    class ItemViewHolder(private val view: View) : RecyclerView.ViewHolder(view) {
-        val textView: TextView = view.findViewById(R.id.item_value)
-        val btn_remove: Button = view.findViewById(R.id.btn_remove)
+    class ItemViewHolder(private val binding: ListItemBinding) : RecyclerView.ViewHolder(binding.root) {
+        fun bind(item:String, clickListener: ItemListener){
+            binding.item=item
+            binding.holder=this
+            binding.clickListener=clickListener
+
+            binding.executePendingBindings()
+        }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ItemViewHolder {
-        val view = LayoutInflater.from(parent.context)
-            .inflate(R.layout.list_item, parent, false)
-        return ItemViewHolder(view)
+        val LayoutInflater =LayoutInflater.from(parent.context)
+        val binding = ListItemBinding.inflate(LayoutInflater,parent,false)
+        return ItemViewHolder(binding)
     }
 
     override fun onBindViewHolder(holder: ItemViewHolder, position: Int) {
         val item = getItem(position)
-        holder.textView.text = item
-        holder.btn_remove.setOnClickListener(object : View.OnClickListener {
-            override fun onClick(v: View?) {
-                callbackClickItem(holder.adapterPosition)
-            }
-        })
+        holder.bind(item, clickListener)
     }
+}
+
+class ItemListener(val clickItem: (pos:Int) -> Unit){
+    fun onClick(pos: Int) = clickItem(pos)
 }
